@@ -11,6 +11,12 @@ app.get('/posts', (req, res) => {
   res.send(posts);
 });
 
+app.options('/posts', (req, res, next) => {
+  console.log('req: ', req);
+
+  next();
+});
+
 app.post('/posts', (req, res) => {
   const id = randomBytes(4).toString('hex');
   const { title } = req.body;
