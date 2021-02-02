@@ -1,37 +1,35 @@
 import { memo, useCallback, useState } from 'react';
 import axios from 'axios';
 
-const PostCreate = () => {
-  const [title, setTitle] = useState('');
+const Create = ({ postId }) => {
+  const [content, setContent] = useState('');
 
   const onSubmit = useCallback(
     async (event) => {
       event.preventDefault();
 
       try {
-        await axios.post('http://localhost:4000/posts', {
-          title
-        });
+        await axios.post(`http://localhost:4001/posts/${postId}/comments`, { content });
 
-        setTitle('');
+        setContent('');
       } catch (error) {
         console.error(error);
       }
     },
-    [title]
+    [content, postId]
   );
 
   return (
     <div>
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label>Title</label>
+          <label>New Comment</label>
           <input
             className="form-control"
-            value={title}
-            onChange={(e) => {
-              setTitle(e?.target.value);
+            onChange={(event) => {
+              setContent(event?.target?.value);
             }}
+            value={content}
           />
         </div>
         <button className="btn btn-primary mt-2">Submit</button>
@@ -40,4 +38,4 @@ const PostCreate = () => {
   );
 };
 
-export default memo(PostCreate);
+export default memo(Create);
