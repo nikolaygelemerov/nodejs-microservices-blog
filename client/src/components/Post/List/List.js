@@ -6,8 +6,8 @@ const List = () => {
   const [posts, setPosts] = useState({});
 
   const fetchPosts = useCallback(async () => {
-    const res = await axios.get('http://localhost:4000/posts');
-
+    const res = await axios.get('http://localhost:4002/posts');
+    console.log('res.data: ', res.data);
     setPosts(res.data);
   }, []);
 
@@ -24,7 +24,7 @@ const List = () => {
         >
           <div className="card-body">
             <h3>{post.title}</h3>
-            <Comment.List postId={post.id} />
+            <Comment.List comments={post.comments} />
             <Comment.Create postId={post.id} />
           </div>
         </div>

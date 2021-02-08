@@ -1,28 +1,21 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+import { memo, useMemo } from 'react';
 
-const List = ({ postId }) => {
-  const [comments, setComments] = useState([]);
-
+const List = ({ comments }) => {
   const renderedComments = useMemo(() => {
-    return comments.map((comment) => {
-      return <li key={comment.id}>{comment.content}</li>;
+    return comments?.map((comment) => {
+      let content = null;
+
+      if (comment.status === 'approved') {
+        content = comment.content;
+      } else if (comment.status === 'pending') {
+        content = 'This comment is awaiting moderation';
+      } else if (comment.status === 'rejected') {
+        content = 'This comment has been rejected';
+      }
+
+      return <li key={comment.id}>{content}</li>;
     });
   }, [comments]);
-
-  const fetchData = useCallback(async () => {
-    try {
-      const res = await axios.get(`http://localhost:4001/posts/${postId}/comments`);
-
-      setComments(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [postId]);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   return <ul>{renderedComments}</ul>;
 };
