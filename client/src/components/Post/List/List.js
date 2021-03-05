@@ -2,11 +2,13 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Comment } from './components';
 
+import { BASE_URL } from '../../../constants';
+
 const List = () => {
   const [posts, setPosts] = useState({});
 
   const fetchPosts = useCallback(async () => {
-    const res = await axios.get('http://localhost:4002/posts');
+    const res = await axios.get(`${BASE_URL}/posts`);
     console.log('res.data: ', res.data);
     setPosts(res.data);
   }, []);

@@ -1,6 +1,8 @@
 import { memo, useCallback, useState } from 'react';
 import axios from 'axios';
 
+import { BASE_URL } from '../../../constants';
+
 const Create = () => {
   const [title, setTitle] = useState('');
 
@@ -9,7 +11,7 @@ const Create = () => {
       event.preventDefault();
 
       try {
-        await axios.post('http://localhost:4000/posts', {
+        await axios.post(`${BASE_URL}/posts/create`, {
           title
         });
 
