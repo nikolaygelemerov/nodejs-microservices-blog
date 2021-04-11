@@ -1,0 +1,68 @@
+Microservices architecture
+
+* How to run it (linux flow, look at 'hints' project for windows realted docs)
+  1. sudo systemctl start docker | start docker deamon
+  2. minikube delete (if minikube cluster is already installed)
+  3. minikube start | create a minikube kubernetes cluster node
+  4. minikube addons enable ingress | creates an ingress controller that exposes Service-s routes
+
+  5. skaffold dev | runs and watches pods and deployments, requires watch mode of Service-s start scripts,
+     for example 'nodemon server.js' instead of 'node server.js'
+
+* BASE_URL - minikube ip
+
+* Query Service is responsible for GET '/posts', it writes in {}posts on
+  each type of event 'PostCreated', 'CommentCreated', 'CommentUpdated'
+  If Posts or Comments is down, Query Services can still serve posts with related comments 
+* Posts and Comments Service-s are responsible for creating post and comment per post id respectively
+* If 
+
+GET Posts
+----------
+List Posts Components makes a GET requrest to `${BASE_URL}/posts` ->
+-> Posts Service receives GET at '/posts' returns {}posts on get
+----------
+
+CREATE Post
+----------
+Create Post Component sends a POST request to `${BASE_URL}/posts/create` ->
+-> Posts Service receives POST at '/posts/create', generates a post id and 
+saves in posts object, then makes a POST to 'http://event-bus-clusterip-srv:4005/events',
+with payload of event type 'PostCreated'
+Event bus pod container is exposed trough a ClusterIP service with
+name 'event-bus-clusterip-srv' at port 4005 ->
+-> Event-bus Service receives POSTS at '/events' and posts the event to all other services -
+Posts, Comments, Query, Moderation ->
+-- Posts Service receives the event, does nothing
+-- Comments Service receives the event (type 'PostCreated'), does nothing
+-- Moderation Service receives the event (type 'PostCreated'), does nothing
+-- Query Service receives the event (type 'PostCreated), writes in posts object a new
+posts with id and title (extracted from the body of the event payload) and creates comments []
+for the new post
+----------
+
+CREATE Comment inside a Post
+----------
+Create Comment Component sends a POST request to `${BASE_URL}/posts/${postId}/comments` (postsId relates comments to a certain post) ->
+-> Comments Service receives POST at '/posts/:id/comments', generates a comment id and saves in commentsBy commentsByPostId with 
+post id retrieved from the request body, then makes a POST to 'http://event-bus-clusterip-srv:4005/events',
+with payload of event type 'CommentCreated' 
+Event bus pod container is exposed trough a ClusterIP service with
+name 'event-bus-clusterip-srv' at port 4005 ->
+-> Event-bus Service receives POSTS at '/events' and posts the event to all other services -
+Posts, Comments, Query, Moderation ->
+-- Posts Service receives the event (type 'CommentCreated'), does nothing
+-- Comments Service receives the event (type 'CommentCreated'), does nothing
+-- Moderation Service receives the event (type 'CommentCreated'), does a Moderation based on
+   some logic and makes a POST request to 'http://event-bus-clusterip-srv:4005/events' with event type 'CommentModerated'
+   and new payload ->
+   -> Event Service dispatches the 'CommentModerated' to all services ->
+   each do nothing except Query Service
+   -> Query Service receives the event (type 'CommentUpdated), finds the comment by post id and comment id, updates in
+   {}posts
+-- Query Service receives the event (type 'CommentCreated), writes in posts object a new
+posts with id and title (extracted from the body of the event payload) and creates comments []
+for the new post
+
+
+
