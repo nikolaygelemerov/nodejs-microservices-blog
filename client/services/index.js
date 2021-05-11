@@ -53,3 +53,35 @@ const formatIntegerString = (rawValue) => {
  * @returns {string}
  */
 const removeNonDigitFromString = (rawValue) => rawValue.replace(/\D/g, '');
+
+const formatAmount = (amount) => {
+  let amountString = '';
+
+  if (GlobalModel.isString(amount)) {
+    // bet could be an already formatted string by onChangeHandler
+    amountString = amount;
+  } else if (GlobalModel.isNumber(amount)) {
+    // bet could be a number(multiplied by 100)
+    amountString = GlobalModel.from100to1(amount, true).toString();
+  }
+
+  if (
+    amountString === '' ||
+    amountString === '0' ||
+    amountString === '0.' ||
+    amountString === '0.0' ||
+    amountString === '0.00' ||
+    amountString === '.' ||
+    amountString === '.0' ||
+    amountString === '.00'
+  ) {
+    amountString = '';
+  } else if (amountString[amountString.length - 2] === '.') {
+    amountString = `${amountString}0`;
+  } else if (amountString[amountString.length - 1] === '.') {
+    amountString = `${amountString}00`;
+  } else if (amountString !== '0' && amountString.indexOf('.') === -1) {
+    amountString = `${amountString}.00`;
+  }
+  return amountString;
+};
